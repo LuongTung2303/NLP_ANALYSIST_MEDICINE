@@ -47,7 +47,7 @@ def main():
     ).to(device)
 
     # --- 5. Huấn luyện (Chỉ chạy khi cần) ---
-    SHOULD_TRAIN = True # Đổi thành False nếu bạn đã có model và muốn chạy Predict ngay
+    SHOULD_TRAIN = False # Đổi thành False nếu bạn đã có model và muốn chạy Predict ngay
     
     if SHOULD_TRAIN:
         print("🛠️ Bắt đầu quá trình huấn luyện...")
@@ -78,24 +78,32 @@ def main():
 
     # --- 6. Chạy thử nghiệm dự đoán (Inference) ---
     print("\n🔍 Chạy thử nghiệm dự đoán:")
-    test_sentence = "Bệnh nhân có triệu chứng đau dạ dày và đã dùng thuốc Omeprazole để điều trị."
     
-    # Bước quan trọng: Tách từ tiếng Việt trước khi đưa vào mô hình
-    segmented_sentence = word_tokenize(test_sentence, format="text")
-    
-    # Dùng pipeline của Hugging Face để dự đoán nhanh
-    from transformers import pipeline
-    nlp_ner = pipeline("token-classification", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
-    
-    ner_results = nlp_ner(segmented_sentence)
+    # THÊM 3 DÒNG NÀY ĐỂ BẮT BUỘC LOAD MODEL TỪ Ổ CỨNG:
+    if not SHOULD_TRAIN:
+        print("🧠 Đang tải bộ não AI đã được huấn luyện từ src/saved_model...")
+        model = AutoModelForTokenClassification.from_pretrained(SAVE_DIR).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(SAVE_DIR)
+    test_sentence = "";
+    while test_sentence != "Stop":
+        test_sentence = str(input("Nhập câu tiếng Việt để dữ đoán (gõ 'Stop' để dừng): "))
+        
+        # Bước quan trọng: Tách từ tiếng Việt trước khi đưa vào mô hình
+        segmented_sentence = word_tokenize(test_sentence, format="text")
+        
+        # Dùng pipeline của Hugging Face để dự đoán nhanh
+        from transformers import pipeline
+        nlp_ner = pipeline("token-classification", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+        
+        ner_results = nlp_ner(segmented_sentence)
 
-    print(f"Câu gốc: {test_sentence}")
-    print("-" * 30)
-    for ent in ner_results:
-        # Làm sạch dấu gạch dưới từ word_tokenize để hiển thị đẹp hơn
-        word = ent['word'].replace('_', ' ')
-        label = ent['entity_group']
-        print(f"Thực thể: {word:20} | Nhãn: {label}")
+        print(f"Câu gốc: {test_sentence}")
+        print("-" * 30)
+        for ent in ner_results:
+            # Làm sạch dấu gạch dưới từ word_tokenize để hiển thị đẹp hơn
+            word = ent['word'].replace('_', ' ')
+            label = ent['entity_group']
+            print(f"Thực thể: {word:20} | Nhãn: {label}")
 
 if __name__ == "__main__":
     main()
