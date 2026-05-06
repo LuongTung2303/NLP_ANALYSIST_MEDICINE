@@ -1,7 +1,7 @@
-B-ten_benh
-B-ten_thuoc
-B-trieu_chung_benh
-I-ten_benh
-I-ten_thuoc
-I-trieu_chung_benh
+B-DISEASE
+B-DRUG
+B-SYMPTOM
+I-DISEASE
+I-DRUG
+I-SYMPTOM
 O
